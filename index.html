@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0e1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Hanouti Pro">
+<meta name="description" content="Gestion du crédit pour votre épicerie">
+<title>Hanouti Pro</title>
+
+<!-- PWA Manifest inline -->
+<script>
+const manifestData = {
+  name: "Hanouti Pro",
+  short_name: "Hanouti",
+  description: "Gestion du crédit - épicerie",
+  start_url: "./",
+  display: "standalone",
+  background_color: "#0e1117",
+  theme_color: "#0e1117",
+  orientation: "portrait",
+  icons: [
+    { src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23d4a843'/><text y='68' x='50' text-anchor='middle' font-size='55'>🏪</text></svg>", sizes: "192x192", type: "image/svg+xml" },
+    { src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23d4a843'/><text y='68' x='50' text-anchor='middle' font-size='55'>🏪</text></svg>", sizes: "512x512", type: "image/svg+xml" }
+  ]
+};
+const blob = new Blob([JSON.stringify(manifestData)], {type:'application/json'});
+const manifestURL = URL.createObjectURL(blob);
+const link = document.createElement('link');
+link.rel = 'manifest'; link.href = manifestURL;
+document.head.appendChild(link);
+</script>
+
+<style>
+:root {
+  --gold: #d4a843;
+  --gold-light: #f0c96a;
+  --gold-dark: #8a6a1e;
+  --bg: #0e1117;
+  --bg2: #141820;
+  --bg3: #1a2030;
+  --surface: #1e2535;
+  --surface2: #242d40;
+  --border: #2e3a50;
+  --border2: #3a4a62;
+  --text: #e8eef8;
+  --text2: #8a9bb5;
+  --text3: #4a5a72;
+  --green: #3dba7a;
+  --green-bg: rgba(61,186,122,0.12);
+  --red: #e05555;
+  --red-bg: rgba(224,85,85,0.12);
+  --orange: #e09030;
+  --orange-bg: rgba(224,144,48,0.12);
+  --blue: #4a8fe0;
+  --blue-bg: rgba(74,143,224,0.12);
+  --nav-h: 64px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+body {
+  font-family: -apple-system, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  padding-bottom: calc(var(--nav-h) + var(--safe-bottom));
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* ── TOP BAR ── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+  height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+  backdrop-filter: blur(12px);
+}
+.topbar-left { display: flex; align-items: center; gap: 10px; }
+.topbar-logo { width: 34px; height: 34px; background: linear-gradient(135deg,var(--gold-dark),var(--gold)); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.topbar-title { font-size: 17px; font-weight: 700; }
+.topbar-sub { font-size: 11px; color: var(--text3); }
+.topbar-right { display: flex; align-items: center; gap: 8px; }
+.icon-btn { width: 36px; height: 36px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; transition: all 0.15s; }
+.icon-btn:active { transform: scale(0.92); background: var(--surface2); }
+.badge-dot { position: absolute; top: -3px; right: -3px; width: 8px; height: 8px; background: var(--red); border-radius: 50%; border: 2px solid var(--bg2); }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  display: flex;
+  height: calc(var(--nav-h) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+}
+.nav-tab {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px; cursor: pointer; transition: all 0.15s; position: relative;
+  color: var(--text3); font-size: 11px; font-weight: 500; padding-top: 2px;
+}
+.nav-tab .ni { font-size: 22px; transition: transform 0.2s; }
+.nav-tab.active { color: var(--gold-light); }
+.nav-tab.active .ni { transform: scale(1.15); }
+.nav-tab:active { opacity: 0.7; }
+.nav-badge { position: absolute; top: 6px; right: calc(50% - 16px); background: var(--red); color: #fff; font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 10px; min-width: 16px; text-align: center; display: none; }
+
+/* ── FAB ── */
+.fab {
+  position: fixed; bottom: calc(var(--nav-h) + var(--safe-bottom) + 16px); right: 16px; z-index: 99;
+  width: 52px; height: 52px; border-radius: 16px;
+  background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+  border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 26px; box-shadow: 0 6px 20px rgba(212,168,67,0.4);
+  transition: all 0.2s;
+}
+.fab:active { transform: scale(0.92); }
+
+/* ── PAGES ── */
+.page { display: none; padding: 16px; }
+.page.active { display: block; }
+
+/* ── SECTION TITLE ── */
+.sec-title { font-size: 13px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 0 10px; }
+.sec-title:first-child { margin-top: 0; }
+
+/* ── STAT CARDS ── */
+.stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 4px; }
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+  padding: 14px; position: relative; overflow: hidden;
+}
+.stat-card::after { content:''; position:absolute; bottom:-16px; left:-16px; width:70px; height:70px; border-radius:50%; opacity:0.07; }
+.stat-card.c-gold::after { background:var(--gold); }
+.stat-card.c-green::after { background:var(--green); }
+.stat-card.c-red::after { background:var(--red); }
+.stat-card.c-blue::after { background:var(--blue); }
+.stat-icon { font-size: 20px; margin-bottom: 8px; display:block; }
+.stat-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+.stat-value { font-size: 22px; font-weight: 900; line-height: 1; }
+.stat-card.c-gold .stat-value { color: var(--gold-light); }
+.stat-card.c-green .stat-value { color: var(--green); }
+.stat-card.c-red .stat-value { color: var(--red); }
+.stat-card.c-blue .stat-value { color: var(--blue); }
+.stat-sub { font-size: 10px; color: var(--text3); margin-top: 3px; }
+
+/* ── CLIENT CARDS ── */
+.client-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+  padding: 14px; margin-bottom: 10px; cursor: pointer;
+  transition: all 0.15s; active-state: opacity 0.7;
+}
+.client-card:active { background: var(--surface2); transform: scale(0.99); }
+.client-card-top { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.avatar { width: 42px; height: 42px; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; flex-shrink: 0; }
+.client-info { flex: 1; min-width: 0; }
+.client-name { font-size: 15px; font-weight: 700; }
+.client-meta { font-size: 12px; color: var(--text3); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.client-balance { text-align: right; }
+.client-balance .amt { font-size: 18px; font-weight: 900; }
+.client-balance .lbl { font-size: 10px; color: var(--text3); margin-top: 1px; }
+.progress-bar { height: 5px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 3px; transition: width 0.4s; }
+.client-card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+
+/* ── BADGE ── */
+.badge { display: inline-flex; align-items: center; gap: 3px; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.badge-green { background: var(--green-bg); color: var(--green); }
+.badge-red { background: var(--red-bg); color: var(--red); }
+.badge-orange { background: var(--orange-bg); color: var(--orange); }
+
+/* ── TX ITEM ── */
+.tx-item {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 12px 14px; margin-bottom: 8px;
+}
+.tx-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.tx-info { flex: 1; min-width: 0; }
+.tx-name { font-size: 13px; font-weight: 700; }
+.tx-note { font-size: 12px; color: var(--text3); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tx-right { text-align: right; flex-shrink: 0; }
+.tx-amount { font-size: 15px; font-weight: 800; }
+.tx-amount.debit { color: var(--red); }
+.tx-amount.credit { color: var(--green); }
+.tx-date { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+/* ── ALERT CARD ── */
+.alert-card {
+  border-radius: 13px; border: 1px solid; padding: 13px 14px;
+  margin-bottom: 10px; display: flex; align-items: center; gap: 12px;
+}
+.alert-card.danger { background: var(--red-bg); border-color: rgba(224,85,85,0.25); }
+.alert-card.warning { background: var(--orange-bg); border-color: rgba(224,144,48,0.25); }
+.alert-icon { font-size: 24px; flex-shrink: 0; }
+.alert-body { flex: 1; min-width: 0; }
+.alert-title { font-size: 13px; font-weight: 700; }
+.alert-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+/* ── BUTTONS ── */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 18px; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; transition: all 0.15s; font-family: inherit; }
+.btn:active { transform: scale(0.96); }
+.btn-primary { background: var(--gold); color: #0d0b00; }
+.btn-primary:active { background: var(--gold-light); }
+.btn-success { background: var(--green-bg); color: var(--green); border: 1px solid rgba(61,186,122,0.2); }
+.btn-danger { background: var(--red-bg); color: var(--red); border: 1px solid rgba(224,85,85,0.2); }
+.btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.btn-sm { padding: 7px 13px; font-size: 12px; border-radius: 8px; }
+.btn-full { width: 100%; }
+
+/* ── SEARCH BAR ── */
+.search-bar {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 10px 14px; margin-bottom: 14px;
+}
+.search-bar input { background: transparent; border: none; outline: none; color: var(--text); font-size: 14px; flex: 1; font-family: inherit; }
+.search-bar input::placeholder { color: var(--text3); }
+
+/* ── FILTER PILLS ── */
+.filter-pills { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 14px; scrollbar-width: none; }
+.filter-pills::-webkit-scrollbar { display: none; }
+.pill { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); color: var(--text2); font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.15s; font-family: inherit; }
+.pill.active { background: var(--gold); color: #0d0b00; border-color: var(--gold); }
+.pill:active { opacity: 0.7; }
+
+/* ── MONTH NAV ── */
+.month-nav { display: flex; align-items: center; justify-content: space-between; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; margin-bottom: 14px; }
+.month-nav .cur { font-size: 14px; font-weight: 700; }
+.month-nav button { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 6px 14px; cursor: pointer; font-size: 16px; font-family: inherit; transition: all 0.15s; }
+.month-nav button:active { background: var(--bg3); }
+
+/* ── MODAL / BOTTOM SHEET ── */
+.sheet-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 500; backdrop-filter: blur(4px); }
+.sheet-overlay.open { display: flex; align-items: flex-end; }
+.sheet { background: var(--bg2); border-radius: 20px 20px 0 0; width: 100%; max-height: 92dvh; overflow-y: auto; padding-bottom: calc(16px + var(--safe-bottom)); animation: slideUp 0.3s cubic-bezier(0.32,0.72,0,1); }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.sheet-handle { width: 40px; height: 4px; background: var(--border2); border-radius: 2px; margin: 12px auto 4px; }
+.sheet-header { padding: 8px 20px 14px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+.sheet-title { font-size: 16px; font-weight: 700; }
+.sheet-close { background: var(--surface2); border: none; color: var(--text2); cursor: pointer; width: 30px; height: 30px; border-radius: 8px; font-size: 16px; display: flex; align-items: center; justify-content: center; font-family: inherit; }
+.sheet-body { padding: 18px 20px; }
+
+/* ── FORM ── */
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; font-size: 12px; color: var(--text2); font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.4px; }
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 10px;
+  padding: 12px 14px; color: var(--text); font-size: 14px; outline: none;
+  font-family: inherit; transition: border-color 0.2s;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--gold-dark); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+select option { background: var(--bg3); }
+textarea { resize: none; height: 70px; }
+
+/* ── TX PREVIEW ── */
+.tx-preview-box { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-top: 12px; display: none; }
+.tx-preview-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; font-size: 13px; }
+.tx-preview-row span { color: var(--text2); }
+.tx-warn { color: var(--red); font-size: 12px; margin-top: 6px; display: none; }
+
+/* ── EMPTY ── */
+.empty { text-align: center; padding: 40px 20px; color: var(--text3); }
+.empty .ei { font-size: 40px; margin-bottom: 10px; opacity: 0.4; }
+.empty p { font-size: 14px; }
+
+/* ── CLIENT DETAIL ── */
+.detail-hero { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 14px; text-align: center; }
+.detail-avatar { width: 64px; height: 64px; border-radius: 18px; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 900; }
+.detail-name { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+.detail-phone { font-size: 13px; color: var(--text2); margin-bottom: 10px; }
+.detail-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-top: 14px; }
+.ds-item { background: var(--bg3); border-radius: 10px; padding: 10px 6px; text-align: center; }
+.ds-value { font-size: 16px; font-weight: 800; }
+.ds-label { font-size: 10px; color: var(--text3); margin-top: 2px; }
+.detail-progress { margin-top: 14px; }
+.detail-progress .dp-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text2); margin-bottom: 6px; }
+.stat-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.stat-row:last-child { border-bottom: none; }
+.stat-row .sr-label { color: var(--text2); }
+.detail-actions { display: flex; gap: 10px; margin-top: 14px; }
+.detail-actions .btn { flex: 1; }
+
+/* ── REPORT CARD ── */
+.report-client-row { display: flex; align-items: center; gap: 10px; padding: 11px 0; border-bottom: 1px solid var(--border); }
+.report-client-row:last-child { border-bottom: none; }
+.rc-rank { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0; }
+.rc-name { flex: 1; font-size: 13px; font-weight: 600; }
+.rc-amt { font-size: 14px; font-weight: 800; }
+
+/* ── SETTINGS ROWS ── */
+.setting-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 12px; }
+.setting-card-title { font-size: 13px; font-weight: 700; color: var(--text2); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.4px; }
+
+/* ── NOTIFICATION ── */
+.notif { position: fixed; top: 66px; left: 50%; transform: translateX(-50%) translateY(-20px); z-index: 999; background: var(--surface2); border: 1px solid var(--border2); border-radius: 12px; padding: 11px 18px; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; box-shadow: 0 8px 30px rgba(0,0,0,0.5); opacity: 0; transition: all 0.3s; white-space: nowrap; }
+.notif.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.notif.success { border-color: var(--green); }
+.notif.error { border-color: var(--red); }
+
+/* ── INSTALL PROMPT ── */
+.install-banner { background: linear-gradient(135deg, var(--gold-dark), var(--gold)); border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; display: flex; align-items: center; gap: 12px; }
+.install-banner .ib-icon { font-size: 28px; }
+.install-banner .ib-text { flex: 1; }
+.install-banner .ib-title { font-size: 14px; font-weight: 800; color: #0d0b00; }
+.install-banner .ib-sub { font-size: 11px; color: #3a2800; margin-top: 2px; }
+.install-banner .ib-btn { background: rgba(0,0,0,0.2); color: #0d0b00; border: none; padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 800; cursor: pointer; font-family: inherit; white-space: nowrap; }
+
+/* ── MONTH SUMMARY BAR ── */
+.month-summary { display: flex; gap: 8px; margin-bottom: 14px; }
+.ms-box { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px; text-align: center; }
+.ms-val { font-size: 16px; font-weight: 800; }
+.ms-label { font-size: 10px; color: var(--text3); margin-top: 2px; }
+
+/* ── SCROLL FIX ── */
+.scroll-area { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo">🏪</div>
+    <div>
+      <div class="topbar-title" id="page-title">Hanouti Pro</div>
+      <div class="topbar-sub" id="page-sub">Tableau de bord</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="icon-btn" onclick="openSearch()" style="position:relative">🔍</div>
+    <div class="icon-btn" onclick="showPage('alerts')" style="position:relative">
+      🔔
+      <span class="badge-dot" id="alert-dot" style="display:none"></span>
+    </div>
+  </div>
+</div>
+
+<!-- PAGES -->
+
+<!-- DASHBOARD -->
+<div id="page-dashboard" class="page active">
+  <div id="install-banner-wrap"></div>
+  <div class="stats-row" id="dash-stats"></div>
+  <div class="sec-title">⚠️ Alertes urgentes</div>
+  <div id="dash-alerts"></div>
+  <div class="sec-title">🏆 Plus grands crédits</div>
+  <div id="dash-top"></div>
+  <div class="sec-title">🕐 Dernières opérations</div>
+  <div id="dash-recent"></div>
+</div>
+
+<!-- CLIENTS -->
+<div id="page-clients" class="page">
+  <div class="search-bar">
+    <span>🔍</span>
+    <input type="text" id="client-search" placeholder="Rechercher un client..." oninput="filterClientSearch(this.value)">
+    <span id="client-search-clear" style="color:var(--text3);cursor:pointer;display:none" onclick="clearClientSearch()">✕</span>
+  </div>
+  <div class="filter-pills">
+    <button class="pill active" onclick="setClientFilter('all',this)">Tous</button>
+    <button class="pill" onclick="setClientFilter('over',this)">⛔ Dépassé</button>
+    <button class="pill" onclick="setClientFilter('debt',this)">💸 En crédit</button>
+    <button class="pill" onclick="setClientFilter('clean',this)">✅ Soldé</button>
+    <button class="pill" onclick="setClientFilter('inactive',this)">😴 Inactif</button>
+  </div>
+  <div id="clients-list"></div>
+</div>
+
+<!-- TRANSACTIONS -->
+<div id="page-transactions" class="page">
+  <div class="month-nav">
+    <button onclick="changeMonth(-1)">‹</button>
+    <div class="cur" id="tx-month-label"></div>
+    <button onclick="changeMonth(1)">›</button>
+  </div>
+  <div class="filter-pills">
+    <button class="pill active" onclick="setTxFilter('all',this)">Tous</button>
+    <button class="pill" onclick="setTxFilter('debit',this)">💸 Crédit</button>
+    <button class="pill" onclick="setTxFilter('credit',this)">💰 Paiement</button>
+  </div>
+  <div class="month-summary" id="tx-summary"></div>
+  <div id="tx-list"></div>
+</div>
+
+<!-- ALERTS -->
+<div id="page-alerts" class="page">
+  <div class="sec-title">⛔ Limite dépassée</div>
+  <div id="alerts-over"></div>
+  <div class="sec-title">😴 Inactifs depuis +30 jours</div>
+  <div id="alerts-inactive"></div>
+  <div class="sec-title">📅 Crédit ancien (+30 jours)</div>
+  <div id="alerts-old"></div>
+</div>
+
+<!-- REPORTS -->
+<div id="page-reports" class="page">
+  <div class="month-nav">
+    <button onclick="changeRepMonth(-1)">‹</button>
+    <div class="cur" id="rep-month-label"></div>
+    <button onclick="changeRepMonth(1)">›</button>
+  </div>
+  <div class="stats-row" id="rep-stats"></div>
+  <div class="sec-title">📊 Plus acheteurs</div>
+  <div id="rep-buyers"></div>
+  <div class="sec-title">💰 Plus payeurs</div>
+  <div id="rep-payers"></div>
+  <div class="sec-title">📋 Détail par client</div>
+  <div id="rep-detail"></div>
+  <div style="margin-top:14px">
+    <button class="btn btn-secondary btn-full" onclick="printReport()">🖨️ Imprimer le rapport</button>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div id="page-settings" class="page">
+  <div class="setting-card">
+    <div class="setting-card-title">🏪 Mon épicerie</div>
+    <div class="form-group"><label>Nom de l'épicerie</label><input id="s-name" type="text" placeholder="Mon épicerie"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Téléphone</label><input id="s-phone" type="tel" placeholder="0XX XXX XXX"></div>
+      <div class="form-group"><label>Limite crédit (D)</label><input id="s-limit" type="number" placeholder="100" min="0"></div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="saveSettings()">💾 Sauvegarder</button>
+  </div>
+  <div class="setting-card">
+    <div class="setting-card-title">🗄️ Données</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button class="btn btn-secondary btn-full" onclick="exportData()">📤 Exporter les données</button>
+      <button class="btn btn-secondary btn-full" onclick="document.getElementById('import-inp').click()">📥 Importer les données</button>
+      <input type="file" id="import-inp" accept=".json" style="display:none" onchange="importData(event)">
+      <button class="btn btn-danger btn-full" onclick="clearAllData()">🗑️ Effacer toutes les données</button>
+    </div>
+  </div>
+  <div class="setting-card">
+    <div class="setting-card-title">📊 Statistiques générales</div>
+    <div id="settings-stats"></div>
+  </div>
+  <div style="text-align:center;color:var(--text3);font-size:12px;padding:12px 0 4px">Hanouti Pro v1.0 — PWA</div>
+</div>
+
+<!-- FAB -->
+<button class="fab" id="fab-btn" onclick="handleFab()">＋</button>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <div class="nav-tab active" onclick="showPage('dashboard')" id="tab-dashboard">
+    <span class="ni">📊</span>
+    <span>Accueil</span>
+  </div>
+  <div class="nav-tab" onclick="showPage('clients')" id="tab-clients">
+    <span class="ni">👥</span>
+    <span>Clients</span>
+    <span class="nav-badge" id="nb-clients"></span>
+  </div>
+  <div class="nav-tab" onclick="showPage('transactions')" id="tab-transactions">
+    <span class="ni">📋</span>
+    <span>Opérations</span>
+  </div>
+  <div class="nav-tab" onclick="showPage('reports')" id="tab-reports">
+    <span class="ni">📈</span>
+    <span>Rapports</span>
+  </div>
+  <div class="nav-tab" onclick="showPage('settings')" id="tab-settings">
+    <span class="ni">⚙️</span>
+    <span>Réglages</span>
+  </div>
+</nav>
+
+<!-- ══════════════════ BOTTOM SHEETS ══════════════════ -->
+
+<!-- CLIENT SHEET -->
+<div class="sheet-overlay" id="sheet-client">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title" id="sc-title">Nouveau client</div>
+      <button class="sheet-close" onclick="closeSheet('sheet-client')">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="form-row">
+        <div class="form-group"><label>Nom complet *</label><input id="sc-name" type="text" placeholder="Mohamed Ben Ali"></div>
+        <div class="form-group"><label>Téléphone</label><input id="sc-phone" type="tel" placeholder="0XX XXX XXX"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Adresse</label><input id="sc-address" type="text" placeholder="Quartier / Rue"></div>
+        <div class="form-group"><label>Limite crédit (D)</label><input id="sc-limit" type="number" placeholder="100" min="0"></div>
+      </div>
+      <div class="form-group"><label>Notes</label><textarea id="sc-notes" placeholder="Informations supplémentaires..."></textarea></div>
+      <button class="btn btn-primary btn-full" onclick="saveClient()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- TX SHEET -->
+<div class="sheet-overlay" id="sheet-tx">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title" id="st-title">Nouvelle opération</div>
+      <button class="sheet-close" onclick="closeSheet('sheet-tx')">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="form-group"><label>Client *</label>
+        <select id="st-client" onchange="updateTxPreview()">
+          <option value="">— Sélectionner un client —</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Type *</label>
+          <select id="st-type" onchange="updateTxPreview()">
+            <option value="debit">💸 Crédit (achat)</option>
+            <option value="credit">💰 Paiement</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Montant (D) *</label>
+          <input id="st-amount" type="number" placeholder="0.000" step="0.001" min="0" oninput="updateTxPreview()">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Date</label><input id="st-date" type="date"></div>
+        <div class="form-group"><label>Description</label><input id="st-note" type="text" placeholder="Pain + lait..."></div>
+      </div>
+      <div class="tx-preview-box" id="tx-preview">
+        <div class="tx-preview-row"><span>Solde actuel</span><b id="tp-cur">—</b></div>
+        <div class="tx-preview-row"><span>Après opération</span><b id="tp-after">—</b></div>
+        <div class="tx-warn" id="tp-warn">⚠️ Ceci dépassera la limite !</div>
+      </div>
+      <div style="margin-top:14px">
+        <button class="btn btn-primary btn-full" onclick="saveTx()">💾 Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CLIENT DETAIL SHEET -->
+<div class="sheet-overlay" id="sheet-detail">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title" id="sd-title">Fiche client</div>
+      <button class="sheet-close" onclick="closeSheet('sheet-detail')">✕</button>
+    </div>
+    <div class="sheet-body" id="sd-body"></div>
+  </div>
+</div>
+
+<!-- SEARCH SHEET -->
+<div class="sheet-overlay" id="sheet-search">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title">🔍 Rechercher</div>
+      <button class="sheet-close" onclick="closeSheet('sheet-search')">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="search-bar" style="margin-bottom:14px">
+        <span>🔍</span>
+        <input type="text" id="global-search-input" placeholder="Nom, téléphone, adresse..." oninput="doGlobalSearch(this.value)" autofocus>
+      </div>
+      <div id="search-results"></div>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICATION -->
+<div class="notif" id="notif"><span id="notif-icon">✅</span><span id="notif-text"></span></div>
+
+<script>
+// ══════════════════════════════════════════════
+// PWA SERVICE WORKER (inline registration)
+// ══════════════════════════════════════════════
+if('serviceWorker' in navigator){
+  const swCode = `
+const CACHE='hanouti-v1';
+const ASSETS=[self.location.pathname];
+self.addEventListener('install',e=>{ e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))); self.skipWaiting(); });
+self.addEventListener('activate',e=>{ e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))); self.clients.claim(); });
+self.addEventListener('fetch',e=>{ e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>caches.match(e.request)))); });
+  `;
+  const swBlob = new Blob([swCode],{type:'application/javascript'});
+  const swURL = URL.createObjectURL(swBlob);
+  navigator.serviceWorker.register(swURL).catch(()=>{});
+}
+
+// Install prompt
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferredPrompt = e;
+  document.getElementById('install-banner-wrap').innerHTML = `
+    <div class="install-banner">
+      <div class="ib-icon">📲</div>
+      <div class="ib-text">
+        <div class="ib-title">Installer l'application</div>
+        <div class="ib-sub">Accès rapide depuis votre écran d'accueil</div>
+      </div>
+      <button class="ib-btn" onclick="installApp()">Installer</button>
+    </div>`;
+});
+function installApp(){
+  if(deferredPrompt){ deferredPrompt.prompt(); deferredPrompt.userChoice.then(()=>{ deferredPrompt=null; document.getElementById('install-banner-wrap').innerHTML=''; }); }
+}
+
+// ══════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════
+let DB = { clients:[], transactions:[], settings:{ shopName:'Mon Épicerie', shopPhone:'', defaultLimit:100 } };
+let editingClientId = null;
+let clientFilter = 'all';
+let txFilter = 'all';
+let txMonth = new Date().getMonth();
+let txYear = new Date().getFullYear();
+let repMonth = new Date().getMonth();
+let repYear = new Date().getFullYear();
+let currentPage = 'dashboard';
+
+const MONTHS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const MONTHS_SHORT = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+
+function saveDB(){ try{ localStorage.setItem('hanutPro_fr', JSON.stringify(DB)); }catch(e){} }
+function loadDB(){ try{ const d=localStorage.getItem('hanutPro_fr'); if(d) DB=JSON.parse(d); }catch(e){} }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+
+// ══════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════
+function balance(cid){ return DB.transactions.filter(t=>t.clientId===cid).reduce((s,t)=>t.type==='debit'?s+t.amount:s-t.amount,0); }
+function lastVisit(cid){ const txs=DB.transactions.filter(t=>t.clientId===cid); if(!txs.length) return null; return txs.reduce((a,b)=>new Date(a.date)>new Date(b.date)?a:b).date; }
+function daysSince(d){ if(!d) return 9999; return Math.floor((Date.now()-new Date(d))/86400000); }
+function limit(c){ return c.creditLimit||DB.settings.defaultLimit||100; }
+function status(c){ const b=balance(c.id),l=limit(c); if(b<=0) return 'clean'; if(b>=l) return 'over'; return 'debt'; }
+function initials(name){ return name.trim().split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase(); }
+function avatarColor(name){ const pal=['#4a8fe0','#8a6de0','#3dba7a','#e09030','#e05555','#d4a843','#4ac8d4','#e04a8a']; let h=0; for(let c of name) h=(h*31+c.charCodeAt(0))%pal.length; return pal[h]; }
+function fmtDate(d){ if(!d) return '—'; const dt=new Date(d); return dt.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'}); }
+function fmtAmt(n){ return (+n||0).toFixed(3); }
+function av(c,size=42,radius=13){ const s=size+'px'; const fs=Math.round(size*0.38)+'px'; return `<div class="avatar" style="width:${s};height:${s};border-radius:${radius}px;background:${avatarColor(c.name)}22;color:${avatarColor(c.name)};font-size:${fs}">${initials(c.name)}</div>`; }
+
+const statusLabel = { clean:'✅ Soldé', debt:'⚠️ En crédit', over:'⛔ Limite dépassée' };
+const statusClass = { clean:'badge-green', debt:'badge-orange', over:'badge-red' };
+const barColor = pct => pct>=100?'var(--red)':pct>=70?'var(--orange)':'var(--green)';
+const amtColor = (b,l) => b<=0?'var(--green)':b>=l?'var(--red)':'var(--orange)';
+
+// ══════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════
+const PAGE_META = {
+  dashboard: { title:'Hanouti Pro', sub:'Tableau de bord' },
+  clients:   { title:'Clients', sub:'Gestion du crédit' },
+  transactions: { title:'Opérations', sub:'Historique' },
+  alerts:    { title:'Alertes', sub:'Notifications' },
+  reports:   { title:'Rapports', sub:'Statistiques' },
+  settings:  { title:'Réglages', sub:'Configuration' }
+};
+
+function showPage(id){
+  currentPage = id;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  const tab=document.getElementById('tab-'+id);
+  if(tab) tab.classList.add('active');
+  const m=PAGE_META[id]||{title:id,sub:''};
+  document.getElementById('page-title').textContent=m.title;
+  document.getElementById('page-sub').textContent=m.sub;
+  // Fab label
+  document.getElementById('fab-btn').style.display=(id==='settings'||id==='alerts'||id==='reports')?'none':'flex';
+  window.scrollTo(0,0);
+  const renders={dashboard:renderDashboard,clients:renderClients,transactions:renderTransactions,alerts:renderAlerts,reports:renderReports,settings:renderSettings};
+  if(renders[id]) renders[id]();
+}
+
+function handleFab(){
+  if(currentPage==='clients') openClientSheet();
+  else openTxSheet();
+}
+
+// ══════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════
+function renderDashboard(){
+  const totDebt=DB.clients.reduce((s,c)=>s+Math.max(0,balance(c.id)),0);
+  const overCount=DB.clients.filter(c=>status(c)==='over').length;
+  const cleanCount=DB.clients.filter(c=>status(c)==='clean').length;
+  const today=new Date().toISOString().slice(0,10);
+  const todayTxs=DB.transactions.filter(t=>t.date===today);
+  const todayKhlas=todayTxs.filter(t=>t.type==='credit').reduce((s,t)=>s+t.amount,0);
+
+  document.getElementById('dash-stats').innerHTML=`
+    <div class="stat-card c-gold">
+      <span class="stat-icon">💸</span>
+      <div class="stat-label">Total crédit</div>
+      <div class="stat-value">${fmtAmt(totDebt)}</div>
+      <div class="stat-sub">dinars dus</div>
+    </div>
+    <div class="stat-card c-blue">
+      <span class="stat-icon">👥</span>
+      <div class="stat-label">Total clients</div>
+      <div class="stat-value">${DB.clients.length}</div>
+      <div class="stat-sub">${cleanCount} soldés · ${DB.clients.length-cleanCount} en crédit</div>
+    </div>
+    <div class="stat-card c-red">
+      <span class="stat-icon">⛔</span>
+      <div class="stat-label">Limite dépassée</div>
+      <div class="stat-value">${overCount}</div>
+      <div class="stat-sub">client(s) dépassé(s)</div>
+    </div>
+    <div class="stat-card c-green">
+      <span class="stat-icon">💰</span>
+      <div class="stat-label">Paiements aujourd'hui</div>
+      <div class="stat-value">${fmtAmt(todayKhlas)}</div>
+      <div class="stat-sub">${todayTxs.length} opération(s)</div>
+    </div>`;
+
+  const over=DB.clients.filter(c=>status(c)==='over').slice(0,3);
+  document.getElementById('dash-alerts').innerHTML = !over.length
+    ? `<div class="empty"><div class="ei">✅</div><p>Aucune alerte urgente</p></div>`
+    : over.map(c=>{ const b=balance(c.id),l=limit(c); return `
+      <div class="alert-card danger">
+        <div class="alert-icon">⛔</div>
+        <div class="alert-body">
+          <div class="alert-title">${c.name}</div>
+          <div class="alert-sub">${fmtAmt(b)} D · Limite ${l} D</div>
+        </div>
+        <button class="btn btn-sm btn-success" onclick="quickPay('${c.id}')">💰 Payer</button>
+      </div>`; }).join('');
+
+  const top5=[...DB.clients].filter(c=>balance(c.id)>0).sort((a,b)=>balance(b.id)-balance(a.id)).slice(0,5);
+  document.getElementById('dash-top').innerHTML = !top5.length
+    ? `<div class="empty"><div class="ei">🎉</div><p>Aucun crédit en cours</p></div>`
+    : `<div class="setting-card" style="padding:12px 14px">${top5.map((c,i)=>{
+        const rk=['var(--gold)','#aaa','#cd7f32','var(--bg3)','var(--bg3)'];
+        const rt=['#000','#000','#000','var(--text2)','var(--text2)'];
+        return `<div class="report-client-row">
+          <div class="rc-rank" style="background:${rk[i]};color:${rt[i]}">${i+1}</div>
+          ${av(c,36,10)}
+          <div class="rc-name">${c.name}</div>
+          <div class="rc-amt" style="color:var(--red)">${fmtAmt(balance(c.id))} D</div>
+        </div>`;
+      }).join('')}</div>`;
+
+  const recent=[...DB.transactions].sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).slice(0,6);
+  document.getElementById('dash-recent').innerHTML = !recent.length
+    ? `<div class="empty"><div class="ei">📋</div><p>Aucune opération</p></div>`
+    : recent.map(t=>{ const c=DB.clients.find(x=>x.id===t.clientId); return `
+      <div class="tx-item">
+        <div class="tx-icon" style="background:${t.type==='debit'?'var(--red-bg)':'var(--green-bg)'}">${t.type==='debit'?'💸':'💰'}</div>
+        <div class="tx-info">
+          <div class="tx-name">${c?.name||'Supprimé'}</div>
+          <div class="tx-note">${t.note||'—'}</div>
+        </div>
+        <div class="tx-right">
+          <div class="tx-amount ${t.type}">${t.type==='debit'?'+':'-'}${fmtAmt(t.amount)} D</div>
+          <div class="tx-date">${fmtDate(t.date)}</div>
+        </div>
+      </div>`; }).join('');
+
+  updateBadges();
+}
+
+function updateBadges(){
+  const overC=DB.clients.filter(c=>status(c)==='over').length;
+  const inactC=DB.clients.filter(c=>daysSince(lastVisit(c.id))>30&&balance(c.id)>0).length;
+  const total=overC+inactC;
+  document.getElementById('alert-dot').style.display=total?'':'none';
+  const nb=document.getElementById('nb-clients');
+  nb.textContent=overC; nb.style.display=overC?'':'none';
+}
+
+// ══════════════════════════════════════════════
+// CLIENTS
+// ══════════════════════════════════════════════
+function renderClients(customList){
+  let list = customList !== undefined ? customList : getFilteredClients();
+  list.sort((a,b)=>balance(b.id)-balance(a.id));
+  document.getElementById('clients-list').innerHTML = !list.length
+    ? `<div class="empty"><div class="ei">👥</div><p>Aucun client trouvé</p></div>`
+    : list.map(c=>{
+        const b=balance(c.id), l=limit(c), pct=Math.min(100,b>0?(b/l)*100:0), s=status(c);
+        const lv=lastVisit(c.id), ds=daysSince(lv);
+        return `<div class="client-card" onclick="viewClient('${c.id}')">
+          <div class="client-card-top">
+            ${av(c)}
+            <div class="client-info">
+              <div class="client-name">${c.name}</div>
+              <div class="client-meta">${c.phone||''}${c.phone&&c.address?' · ':''}${c.address||''}</div>
+            </div>
+            <div class="client-balance">
+              <div class="amt" style="color:${amtColor(b,l)}">${fmtAmt(b)}</div>
+              <div class="lbl">dinars</div>
+            </div>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${barColor(pct)}"></div></div>
+          <div class="client-card-footer">
+            <span class="badge ${statusClass[s]}">${statusLabel[s]}</span>
+            <span style="font-size:11px;color:${ds>30?'var(--red)':'var(--text3)'}">
+              ${lv?`${ds}j sans visite`:'Nouveau'}
+            </span>
+          </div>
+        </div>`;
+      }).join('');
+}
+
+function getFilteredClients(){
+  let list=[...DB.clients];
+  if(clientFilter==='over') list=list.filter(c=>status(c)==='over');
+  else if(clientFilter==='debt') list=list.filter(c=>status(c)==='debt');
+  else if(clientFilter==='clean') list=list.filter(c=>status(c)==='clean');
+  else if(clientFilter==='inactive') list=list.filter(c=>daysSince(lastVisit(c.id))>30&&balance(c.id)>0);
+  return list;
+}
+
+function setClientFilter(f,el){
+  clientFilter=f;
+  document.querySelectorAll('#page-clients .pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('client-search').value='';
+  document.getElementById('client-search-clear').style.display='none';
+  renderClients();
+}
+
+function filterClientSearch(q){
+  document.getElementById('client-search-clear').style.display=q?'':'none';
+  if(!q){ renderClients(); return; }
+  const found=DB.clients.filter(c=>c.name.toLowerCase().includes(q.toLowerCase())||(c.phone||'').includes(q)||(c.address||'').toLowerCase().includes(q.toLowerCase()));
+  renderClients(found);
+}
+
+function clearClientSearch(){
+  document.getElementById('client-search').value='';
+  document.getElementById('client-search-clear').style.display='none';
+  renderClients();
+}
+
+// ══════════════════════════════════════════════
+// CLIENT SHEET
+// ══════════════════════════════════════════════
+function openClientSheet(id){
+  editingClientId=id||null;
+  const c=id?DB.clients.find(x=>x.id===id):null;
+  document.getElementById('sc-title').textContent=c?'Modifier le client':'Nouveau client';
+  document.getElementById('sc-name').value=c?.name||'';
+  document.getElementById('sc-phone').value=c?.phone||'';
+  document.getElementById('sc-address').value=c?.address||'';
+  document.getElementById('sc-limit').value=c?.creditLimit||DB.settings.defaultLimit||100;
+  document.getElementById('sc-notes').value=c?.notes||'';
+  openSheet('sheet-client');
+}
+
+function saveClient(){
+  const name=document.getElementById('sc-name').value.trim();
+  if(!name){ showNotif('Entrez le nom du client','error'); return; }
+  const data={ name, phone:document.getElementById('sc-phone').value.trim(), address:document.getElementById('sc-address').value.trim(), creditLimit:parseFloat(document.getElementById('sc-limit').value)||DB.settings.defaultLimit||100, notes:document.getElementById('sc-notes').value.trim() };
+  if(editingClientId){ const i=DB.clients.findIndex(c=>c.id===editingClientId); DB.clients[i]={...DB.clients[i],...data}; showNotif('Client mis à jour ✅'); }
+  else { DB.clients.push({id:uid(),createdAt:new Date().toISOString(),...data}); showNotif('Client ajouté ✅'); }
+  saveDB(); closeSheet('sheet-client'); renderClients(); renderDashboard();
+}
+
+function deleteClient(id){
+  const c=DB.clients.find(x=>x.id===id);
+  if(!confirm(`Supprimer "${c.name}" ? Toutes ses opérations seront perdues.`)) return;
+  DB.clients=DB.clients.filter(x=>x.id!==id);
+  DB.transactions=DB.transactions.filter(t=>t.clientId!==id);
+  saveDB(); closeSheet('sheet-detail'); renderClients(); renderDashboard(); showNotif('Supprimé','error');
+}
+
+// ══════════════════════════════════════════════
+// CLIENT DETAIL
+// ══════════════════════════════════════════════
+function viewClient(id){
+  const c=DB.clients.find(x=>x.id===id); if(!c) return;
+  const b=balance(id), l=limit(c), pct=Math.min(100,b>0?(b/l)*100:0), s=status(c);
+  const txs=DB.transactions.filter(t=>t.clientId===id).sort((a,bb)=>bb.createdAt.localeCompare(a.createdAt));
+  const totBought=txs.filter(t=>t.type==='debit').reduce((ss,t)=>ss+t.amount,0);
+  const totPaid=txs.filter(t=>t.type==='credit').reduce((ss,t)=>ss+t.amount,0);
+  const lv=lastVisit(id), ds=daysSince(lv);
+
+  document.getElementById('sd-title').textContent=c.name;
+  document.getElementById('sd-body').innerHTML=`
+    <div class="detail-hero">
+      <div class="detail-avatar" style="background:${avatarColor(c.name)}22;color:${avatarColor(c.name)}">${initials(c.name)}</div>
+      <div class="detail-name">${c.name}</div>
+      <div class="detail-phone">${c.phone||'Pas de téléphone'}${c.address?` · 📍 ${c.address}`:''}</div>
+      <span class="badge ${statusClass[s]}">${statusLabel[s]}</span>
+      <div class="detail-progress">
+        <div class="dp-label"><span>Crédit utilisé</span><span>${pct.toFixed(0)}% de ${l} D</span></div>
+        <div class="progress-bar" style="height:8px"><div class="progress-fill" style="width:${pct}%;background:${barColor(pct)}"></div></div>
+      </div>
+      <div class="detail-stats">
+        <div class="ds-item"><div class="ds-value" style="color:${amtColor(b,l)}">${fmtAmt(b)}</div><div class="ds-label">Solde (D)</div></div>
+        <div class="ds-item"><div class="ds-value" style="color:var(--orange)">${fmtAmt(totBought)}</div><div class="ds-label">Acheté (D)</div></div>
+        <div class="ds-item"><div class="ds-value" style="color:var(--green)">${fmtAmt(totPaid)}</div><div class="ds-label">Payé (D)</div></div>
+      </div>
+      <div class="detail-actions">
+        <button class="btn btn-success" onclick="closeSheet('sheet-detail');quickPay('${id}')">💰 Paiement</button>
+        <button class="btn btn-secondary" onclick="closeSheet('sheet-detail');openClientSheet('${id}')">✏️ Modifier</button>
+        <button class="btn btn-danger" onclick="deleteClient('${id}')">🗑️</button>
+      </div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:14px">
+      <div class="stat-row"><span class="sr-label">Dernière visite</span><b>${fmtDate(lv)}${ds<9999?` (${ds}j)`:''}</b></div>
+      <div class="stat-row"><span class="sr-label">Limite crédit</span><b>${l} D</b></div>
+      <div class="stat-row"><span class="sr-label">Nb opérations</span><b>${txs.length}</b></div>
+      ${c.notes?`<div class="stat-row"><span class="sr-label">Notes</span><span style="color:var(--text2);font-size:12px">${c.notes}</span></div>`:''}
+    </div>
+    <div style="font-weight:700;margin-bottom:10px;font-size:14px">📋 Opérations (${txs.length})</div>
+    ${!txs.length?`<div class="empty"><div class="ei">📋</div><p>Aucune opération</p></div>`
+      :txs.slice(0,40).map(t=>`
+      <div class="tx-item">
+        <div class="tx-icon" style="background:${t.type==='debit'?'var(--red-bg)':'var(--green-bg)'}">${t.type==='debit'?'💸':'💰'}</div>
+        <div class="tx-info">
+          <div class="tx-name">${t.note||'(sans description)'}</div>
+          <div class="tx-note">${fmtDate(t.date)}</div>
+        </div>
+        <div class="tx-right">
+          <div class="tx-amount ${t.type}">${t.type==='debit'?'+':'-'}${fmtAmt(t.amount)} D</div>
+          <button style="background:var(--red-bg);color:var(--red);border:none;border-radius:6px;padding:3px 7px;cursor:pointer;font-size:11px;margin-top:4px" onclick="delTxDetail('${t.id}','${id}')">🗑️</button>
+        </div>
+      </div>`).join('')}
+  `;
+  openSheet('sheet-detail');
+}
+
+function delTxDetail(txId, clientId){
+  if(!confirm('Supprimer cette opération ?')) return;
+  DB.transactions=DB.transactions.filter(t=>t.id!==txId);
+  saveDB(); showNotif('Supprimé','error'); viewClient(clientId);
+  renderDashboard(); renderClients();
+}
+
+// ══════════════════════════════════════════════
+// TRANSACTIONS
+// ══════════════════════════════════════════════
+function renderTransactions(){
+  document.getElementById('tx-month-label').textContent=`${MONTHS[txMonth]} ${txYear}`;
+  let txs=DB.transactions.filter(t=>{ const d=new Date(t.date); return d.getMonth()===txMonth&&d.getFullYear()===txYear; });
+  if(txFilter!=='all') txs=txs.filter(t=>t.type===txFilter);
+  txs.sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+  const sumD=txs.filter(t=>t.type==='debit').reduce((s,t)=>s+t.amount,0);
+  const sumC=txs.filter(t=>t.type==='credit').reduce((s,t)=>s+t.amount,0);
+  document.getElementById('tx-summary').innerHTML=`
+    <div class="ms-box"><div class="ms-val" style="color:var(--red)">${fmtAmt(sumD)}</div><div class="ms-label">Crédit (D)</div></div>
+    <div class="ms-box"><div class="ms-val" style="color:var(--green)">${fmtAmt(sumC)}</div><div class="ms-label">Paiements (D)</div></div>
+    <div class="ms-box"><div class="ms-val" style="color:var(--orange)">${fmtAmt(sumD-sumC)}</div><div class="ms-label">Différence (D)</div></div>`;
+  document.getElementById('tx-list').innerHTML = !txs.length
+    ? `<div class="empty"><div class="ei">📋</div><p>Aucune opération ce mois</p></div>`
+    : txs.map(t=>{ const c=DB.clients.find(x=>x.id===t.clientId); return `
+      <div class="tx-item">
+        <div class="tx-icon" style="background:${t.type==='debit'?'var(--red-bg)':'var(--green-bg)'}">${t.type==='debit'?'💸':'💰'}</div>
+        ${c?av(c,36,10):`<div class="avatar" style="width:36px;height:36px;border-radius:10px;background:#33333322;color:#666">?</div>`}
+        <div class="tx-info">
+          <div class="tx-name">${c?.name||'Supprimé'}</div>
+          <div class="tx-note">${t.note||'—'}</div>
+        </div>
+        <div class="tx-right">
+          <div class="tx-amount ${t.type}">${t.type==='debit'?'+':'-'}${fmtAmt(t.amount)} D</div>
+          <div class="tx-date">${fmtDate(t.date)}</div>
+        </div>
+        <button style="background:var(--red-bg);color:var(--red);border:none;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px;margin-right:4px" onclick="deleteTx('${t.id}')">🗑️</button>
+      </div>`; }).join('');
+}
+
+function changeMonth(d){ txMonth+=d; if(txMonth<0){txMonth=11;txYear--;} if(txMonth>11){txMonth=0;txYear++;} renderTransactions(); }
+function setTxFilter(f,el){ txFilter=f; document.querySelectorAll('#page-transactions .pill').forEach(p=>p.classList.remove('active')); el.classList.add('active'); renderTransactions(); }
+function deleteTx(id){ if(!confirm('Supprimer cette opération ?')) return; DB.transactions=DB.transactions.filter(t=>t.id!==id); saveDB(); renderTransactions(); renderDashboard(); showNotif('Supprimé','error'); }
+
+// ══════════════════════════════════════════════
+// TX SHEET
+// ══════════════════════════════════════════════
+function openTxSheet(preClientId, preType){
+  const sel=document.getElementById('st-client');
+  sel.innerHTML='<option value="">— Sélectionner un client —</option>'+
+    DB.clients.map(c=>`<option value="${c.id}">${c.name}${c.phone?' ('+c.phone+')':''}</option>`).join('');
+  if(preClientId) sel.value=preClientId;
+  document.getElementById('st-type').value=preType||'debit';
+  document.getElementById('st-amount').value='';
+  document.getElementById('st-note').value='';
+  document.getElementById('st-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('tx-preview').style.display='none';
+  document.getElementById('st-title').textContent=preType==='credit'?'Enregistrer un paiement':'Nouvelle opération';
+  if(preClientId) updateTxPreview();
+  openSheet('sheet-tx');
+}
+
+function quickPay(id){ openTxSheet(id,'credit'); }
+
+function updateTxPreview(){
+  const cid=document.getElementById('st-client').value;
+  const type=document.getElementById('st-type').value;
+  const amt=parseFloat(document.getElementById('st-amount').value)||0;
+  if(!cid){ document.getElementById('tx-preview').style.display='none'; return; }
+  const c=DB.clients.find(x=>x.id===cid);
+  const b=balance(cid), l=limit(c), after=type==='debit'?b+amt:b-amt;
+  document.getElementById('tp-cur').textContent=fmtAmt(b)+' D';
+  document.getElementById('tp-cur').style.color=b>0?'var(--orange)':'var(--green)';
+  document.getElementById('tp-after').textContent=fmtAmt(after)+' D';
+  document.getElementById('tp-after').style.color=after>0?(after>=l?'var(--red)':'var(--orange)'):'var(--green)';
+  document.getElementById('tp-warn').style.display=(type==='debit'&&after>=l)?'':'none';
+  document.getElementById('tx-preview').style.display='';
+}
+
+function saveTx(){
+  const clientId=document.getElementById('st-client').value;
+  const type=document.getElementById('st-type').value;
+  const amount=parseFloat(document.getElementById('st-amount').value);
+  const date=document.getElementById('st-date').value;
+  const note=document.getElementById('st-note').value.trim();
+  if(!clientId){ showNotif('Sélectionnez un client','error'); return; }
+  if(!amount||amount<=0){ showNotif('Montant invalide','error'); return; }
+  DB.transactions.push({id:uid(),clientId,type,amount,date,note,createdAt:new Date().toISOString()});
+  saveDB(); closeSheet('sheet-tx');
+  showNotif(type==='debit'?'✅ Crédit enregistré':'✅ Paiement enregistré');
+  renderDashboard(); if(currentPage==='clients') renderClients(); if(currentPage==='transactions') renderTransactions(); updateBadges();
+}
+
+// ══════════════════════════════════════════════
+// ALERTS
+// ══════════════════════════════════════════════
+function renderAlerts(){
+  const over=DB.clients.filter(c=>status(c)==='over');
+  document.getElementById('alerts-over').innerHTML = !over.length
+    ? `<div class="empty"><div class="ei">✅</div><p>Tous les clients sont dans la limite</p></div>`
+    : over.map(c=>{ const b=balance(c.id),l=limit(c); return `
+      <div class="alert-card danger">
+        <div class="alert-icon">⛔</div>
+        <div class="alert-body">
+          <div class="alert-title">${c.name}${c.phone?' — '+c.phone:''}</div>
+          <div class="alert-sub">${fmtAmt(b)} D · Limite ${l} D · Dépassement ${fmtAmt(b-l)} D</div>
+        </div>
+        <button class="btn btn-sm btn-success" onclick="quickPay('${c.id}')">💰</button>
+      </div>`; }).join('');
+
+  const inactive=DB.clients.filter(c=>daysSince(lastVisit(c.id))>30&&balance(c.id)>0);
+  document.getElementById('alerts-inactive').innerHTML = !inactive.length
+    ? `<div class="empty"><div class="ei">✅</div><p>Tous les clients sont actifs</p></div>`
+    : inactive.map(c=>`
+      <div class="alert-card warning">
+        <div class="alert-icon">😴</div>
+        <div class="alert-body">
+          <div class="alert-title">${c.name}${c.phone?' — '+c.phone:''}</div>
+          <div class="alert-sub">Absent depuis ${daysSince(lastVisit(c.id))}j · ${fmtAmt(balance(c.id))} D dû</div>
+        </div>
+        <button class="btn btn-sm btn-secondary" onclick="viewClient('${c.id}')">👁️</button>
+      </div>`).join('');
+
+  const oldDebt=DB.clients.filter(c=>{
+    if(balance(c.id)<=0) return false;
+    const oldest=DB.transactions.filter(t=>t.clientId===c.id&&t.type==='debit').sort((a,b)=>a.date.localeCompare(b.date))[0];
+    return oldest&&daysSince(oldest.date)>30;
+  });
+  document.getElementById('alerts-old').innerHTML = !oldDebt.length
+    ? `<div class="empty"><div class="ei">✅</div><p>Aucun crédit ancien</p></div>`
+    : oldDebt.map(c=>{ const oldest=DB.transactions.filter(t=>t.clientId===c.id&&t.type==='debit').sort((a,b)=>a.date.localeCompare(b.date))[0]; return `
+      <div class="alert-card warning">
+        <div class="alert-icon">📅</div>
+        <div class="alert-body">
+          <div class="alert-title">${c.name}</div>
+          <div class="alert-sub">Crédit depuis ${fmtDate(oldest.date)} (${daysSince(oldest.date)}j) · ${fmtAmt(balance(c.id))} D</div>
+        </div>
+        <button class="btn btn-sm btn-success" onclick="quickPay('${c.id}')">💰</button>
+      </div>`; }).join('');
+}
+
+// ══════════════════════════════════════════════
+// REPORTS
+// ══════════════════════════════════════════════
+function renderReports(){
+  document.getElementById('rep-month-label').textContent=`${MONTHS[repMonth]} ${repYear}`;
+  const mTxs=DB.transactions.filter(t=>{ const d=new Date(t.date); return d.getMonth()===repMonth&&d.getFullYear()===repYear; });
+  const totD=mTxs.filter(t=>t.type==='debit').reduce((s,t)=>s+t.amount,0);
+  const totC=mTxs.filter(t=>t.type==='credit').reduce((s,t)=>s+t.amount,0);
+  const actC=new Set(mTxs.map(t=>t.clientId)).size;
+
+  document.getElementById('rep-stats').innerHTML=`
+    <div class="stat-card c-red"><span class="stat-icon">💸</span><div class="stat-label">Crédit du mois</div><div class="stat-value">${fmtAmt(totD)}</div><div class="stat-sub">dinars</div></div>
+    <div class="stat-card c-green"><span class="stat-icon">💰</span><div class="stat-label">Paiements du mois</div><div class="stat-value">${fmtAmt(totC)}</div><div class="stat-sub">dinars</div></div>
+    <div class="stat-card c-gold"><span class="stat-icon">📊</span><div class="stat-label">Différence</div><div class="stat-value">${fmtAmt(totD-totC)}</div><div class="stat-sub">non payé</div></div>
+    <div class="stat-card c-blue"><span class="stat-icon">👥</span><div class="stat-label">Clients actifs</div><div class="stat-value">${actC}</div><div class="stat-sub">ce mois</div></div>`;
+
+  const buyMap={}, payMap={};
+  mTxs.filter(t=>t.type==='debit').forEach(t=>buyMap[t.clientId]=(buyMap[t.clientId]||0)+t.amount);
+  mTxs.filter(t=>t.type==='credit').forEach(t=>payMap[t.clientId]=(payMap[t.clientId]||0)+t.amount);
+
+  const topRows=(map,color)=>{
+    const sorted=Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    if(!sorted.length) return `<div class="empty"><div class="ei">📊</div><p>Aucune donnée</p></div>`;
+    return `<div class="setting-card" style="padding:12px 14px">${sorted.map(([cid,amt],i)=>{
+      const c=DB.clients.find(x=>x.id===cid);
+      const rk=['var(--gold)','#aaa','#cd7f32','var(--bg3)','var(--bg3)'];
+      const rt=['#000','#000','#000','var(--text2)','var(--text2)'];
+      return `<div class="report-client-row">
+        <div class="rc-rank" style="background:${rk[i]};color:${rt[i]}">${i+1}</div>
+        ${c?av(c,34,10):`<div class="avatar" style="width:34px;height:34px;border-radius:10px;background:#33333322;color:#666">?</div>`}
+        <div class="rc-name">${c?.name||'Supprimé'}</div>
+        <div class="rc-amt" style="color:${color}">${fmtAmt(amt)} D</div>
+      </div>`;
+    }).join('')}</div>`;
+  };
+
+  document.getElementById('rep-buyers').innerHTML=topRows(buyMap,'var(--red)');
+  document.getElementById('rep-payers').innerHTML=topRows(payMap,'var(--green)');
+
+  const active=DB.clients.filter(c=>mTxs.some(t=>t.clientId===c.id));
+  document.getElementById('rep-detail').innerHTML = !active.length
+    ? `<div class="empty"><div class="ei">📋</div><p>Aucune donnée ce mois</p></div>`
+    : active.map(c=>{
+        const ctxs=mTxs.filter(t=>t.clientId===c.id);
+        const b=ctxs.filter(t=>t.type==='debit').reduce((s,t)=>s+t.amount,0);
+        const p=ctxs.filter(t=>t.type==='credit').reduce((s,t)=>s+t.amount,0);
+        const eb=balance(c.id);
+        return `<div class="setting-card" style="padding:12px 14px;margin-bottom:8px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            ${av(c,36,10)}
+            <div style="font-weight:700;font-size:14px">${c.name}</div>
+            <div style="margin-right:auto;font-size:11px;color:var(--text3)">${ctxs.length} op.</div>
+            <span class="badge ${statusClass[status(c)]}">${statusLabel[status(c)]}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+            <div style="text-align:center;background:var(--bg3);border-radius:8px;padding:8px">
+              <div style="font-size:13px;font-weight:800;color:var(--red)">${fmtAmt(b)}</div>
+              <div style="font-size:10px;color:var(--text3)">Crédit</div>
+            </div>
+            <div style="text-align:center;background:var(--bg3);border-radius:8px;padding:8px">
+              <div style="font-size:13px;font-weight:800;color:var(--green)">${fmtAmt(p)}</div>
+              <div style="font-size:10px;color:var(--text3)">Payé</div>
+            </div>
+            <div style="text-align:center;background:var(--bg3);border-radius:8px;padding:8px">
+              <div style="font-size:13px;font-weight:800;color:${eb>0?'var(--orange)':'var(--green)'}">${fmtAmt(eb)}</div>
+              <div style="font-size:10px;color:var(--text3)">Solde</div>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+}
+
+function changeRepMonth(d){ repMonth+=d; if(repMonth<0){repMonth=11;repYear--;} if(repMonth>11){repMonth=0;repYear++;} renderReports(); }
+
+function printReport(){
+  const mTxs=DB.transactions.filter(t=>{ const d=new Date(t.date); return d.getMonth()===repMonth&&d.getFullYear()===repYear; });
+  const totD=mTxs.filter(t=>t.type==='debit').reduce((s,t)=>s+t.amount,0);
+  const totC=mTxs.filter(t=>t.type==='credit').reduce((s,t)=>s+t.amount,0);
+  const active=DB.clients.filter(c=>mTxs.some(t=>t.clientId===c.id));
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Rapport ${MONTHS[repMonth]} ${repYear}</title>
+  <style>body{font-family:Arial,sans-serif;padding:24px;color:#222}
+  h1{margin-bottom:4px}p.sub{color:#888;font-size:13px;margin-bottom:16px}
+  table{width:100%;border-collapse:collapse;margin-top:12px}
+  th,td{border:1px solid #ddd;padding:8px 10px;text-align:left}th{background:#f5f5f5}
+  .sum{display:flex;gap:20px;background:#f9f9f9;padding:12px;border-radius:6px;margin-bottom:16px}
+  .s{text-align:center}.sv{font-size:22px;font-weight:900}.sl{font-size:11px;color:#888}
+  .over{background:#fff0f0} </style></head><body>
+  <h1>Rapport — ${MONTHS[repMonth]} ${repYear}</h1>
+  <p class="sub">${DB.settings.shopName}${DB.settings.shopPhone?' · '+DB.settings.shopPhone:''}</p>
+  <div class="sum">
+    <div class="s"><div class="sv" style="color:#e05555">${fmtAmt(totD)} D</div><div class="sl">Total crédit</div></div>
+    <div class="s"><div class="sv" style="color:#3dba7a">${fmtAmt(totC)} D</div><div class="sl">Total paiements</div></div>
+    <div class="s"><div class="sv" style="color:#e09030">${fmtAmt(totD-totC)} D</div><div class="sl">Différence</div></div>
+    <div class="s"><div class="sv">${active.length}</div><div class="sl">Clients actifs</div></div>
+  </div>
+  <table><thead><tr><th>Client</th><th>Téléphone</th><th>Crédit mois</th><th>Paiements mois</th><th>Solde actuel</th><th>Opérations</th></tr></thead><tbody>
+  ${active.map(c=>{
+    const ct=mTxs.filter(t=>t.clientId===c.id);
+    const b=ct.filter(t=>t.type==='debit').reduce((s,t)=>s+t.amount,0);
+    const p=ct.filter(t=>t.type==='credit').reduce((s,t)=>s+t.amount,0);
+    const eb=balance(c.id);
+    return `<tr ${eb>=limit(c)?'class="over"':''}><td>${c.name}</td><td>${c.phone||'—'}</td><td>${fmtAmt(b)} D</td><td>${fmtAmt(p)} D</td><td>${fmtAmt(eb)} D</td><td>${ct.length}</td></tr>`;
+  }).join('')}
+  </tbody></table>
+  <h2 style="margin-top:20px">Clients ayant dépassé la limite</h2>
+  <table><thead><tr><th>Client</th><th>Téléphone</th><th>Crédit</th><th>Limite</th><th>Dépassement</th></tr></thead><tbody>
+  ${DB.clients.filter(c=>status(c)==='over').map(c=>{const b=balance(c.id),l=limit(c);return `<tr class="over"><td>${c.name}</td><td>${c.phone||'—'}</td><td>${fmtAmt(b)} D</td><td>${l} D</td><td style="color:red">${fmtAmt(b-l)} D</td></tr>`;}).join('')||'<tr><td colspan="5" style="text-align:center">Aucun</td></tr>'}
+  </tbody></table>
+  <p style="color:#aaa;font-size:11px;margin-top:20px">Imprimé le ${new Date().toLocaleString('fr-FR')}</p>
+  </body></html>`); w.print();
+}
+
+// ══════════════════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════════════════
+function renderSettings(){
+  document.getElementById('s-name').value=DB.settings.shopName;
+  document.getElementById('s-phone').value=DB.settings.shopPhone||'';
+  document.getElementById('s-limit').value=DB.settings.defaultLimit||100;
+  const totDebt=DB.clients.reduce((s,c)=>s+Math.max(0,balance(c.id)),0);
+  document.getElementById('settings-stats').innerHTML=`
+    <div class="stat-row"><span class="sr-label">Nombre de clients</span><b>${DB.clients.length}</b></div>
+    <div class="stat-row"><span class="sr-label">Nombre d'opérations</span><b>${DB.transactions.length}</b></div>
+    <div class="stat-row"><span class="sr-label">Total crédit</span><b style="color:var(--red)">${fmtAmt(totDebt)} D</b></div>
+    <div class="stat-row"><span class="sr-label">Clients dépassés</span><b style="color:var(--red)">${DB.clients.filter(c=>status(c)==='over').length}</b></div>
+    <div class="stat-row"><span class="sr-label">Clients soldés</span><b style="color:var(--green)">${DB.clients.filter(c=>status(c)==='clean').length}</b></div>`;
+}
+
+function saveSettings(){
+  DB.settings.shopName=document.getElementById('s-name').value.trim()||'Mon Épicerie';
+  DB.settings.shopPhone=document.getElementById('s-phone').value.trim();
+  DB.settings.defaultLimit=parseFloat(document.getElementById('s-limit').value)||100;
+  saveDB(); showNotif('✅ Réglages sauvegardés');
+}
+
+function exportData(){
+  const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=`hanouti-pro-${new Date().toISOString().slice(0,10)}.json`; a.click();
+  showNotif('✅ Données exportées');
+}
+
+function importData(e){
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=ev=>{ try{ const d=JSON.parse(ev.target.result); if(!d.clients||!d.transactions) throw 0; DB=d; saveDB(); showNotif('✅ Données importées'); renderDashboard(); } catch{ showNotif('Fichier invalide!','error'); } };
+  r.readAsText(f); e.target.value='';
+}
+
+function clearAllData(){
+  if(!confirm('Effacer toutes les données ?')) return;
+  if(!confirm('Dernière confirmation — irréversible !')) return;
+  DB={clients:[],transactions:[],settings:DB.settings}; saveDB();
+  showNotif('Données effacées','error'); renderDashboard();
+}
+
+// ══════════════════════════════════════════════
+// SEARCH
+// ══════════════════════════════════════════════
+function openSearch(){
+  document.getElementById('global-search-input').value='';
+  document.getElementById('search-results').innerHTML='<div class="empty"><div class="ei">🔍</div><p>Tapez pour chercher...</p></div>';
+  openSheet('sheet-search');
+  setTimeout(()=>document.getElementById('global-search-input').focus(),300);
+}
+
+function doGlobalSearch(q){
+  q=q.trim().toLowerCase();
+  if(!q){ document.getElementById('search-results').innerHTML='<div class="empty"><div class="ei">🔍</div><p>Tapez pour chercher...</p></div>'; return; }
+  const found=DB.clients.filter(c=>c.name.toLowerCase().includes(q)||(c.phone||'').includes(q)||(c.address||'').toLowerCase().includes(q));
+  document.getElementById('search-results').innerHTML = !found.length
+    ? `<div class="empty"><div class="ei">🔍</div><p>Aucun résultat</p></div>`
+    : found.map(c=>{
+        const b=balance(c.id), s=status(c);
+        return `<div class="client-card" onclick="closeSheet('sheet-search');viewClient('${c.id}')">
+          <div class="client-card-top">
+            ${av(c)}
+            <div class="client-info"><div class="client-name">${c.name}</div><div class="client-meta">${c.phone||''}${c.phone&&c.address?' · ':''}${c.address||''}</div></div>
+            <div class="client-balance"><div class="amt" style="color:${amtColor(b,limit(c))}">${fmtAmt(b)}</div><div class="lbl">D</div></div>
+          </div>
+          <div style="margin-top:4px"><span class="badge ${statusClass[s]}">${statusLabel[s]}</span></div>
+        </div>`;
+      }).join('');
+}
+
+// ══════════════════════════════════════════════
+// SHEET HELPERS
+// ══════════════════════════════════════════════
+function openSheet(id){ document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; }
+function closeSheet(id){ document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; }
+document.querySelectorAll('.sheet-overlay').forEach(o=>o.addEventListener('click',e=>{ if(e.target===o) closeSheet(o.id); }));
+
+// Swipe to close sheets
+document.querySelectorAll('.sheet').forEach(sheet=>{
+  let startY=0;
+  sheet.addEventListener('touchstart',e=>startY=e.touches[0].clientY,{passive:true});
+  sheet.addEventListener('touchend',e=>{
+    const diff=e.changedTouches[0].clientY-startY;
+    if(diff>80) closeSheet(sheet.parentElement.id);
+  },{passive:true});
+});
+
+// ══════════════════════════════════════════════
+// NOTIFICATION
+// ══════════════════════════════════════════════
+let _nt;
+function showNotif(text,type='success'){
+  const el=document.getElementById('notif');
+  document.getElementById('notif-icon').textContent=type==='success'?'✅':'❌';
+  document.getElementById('notif-text').textContent=text;
+  el.className='notif '+type+' show';
+  clearTimeout(_nt); _nt=setTimeout(()=>el.classList.remove('show'),2800);
+}
+
+// ══════════════════════════════════════════════
+// DEMO DATA
+// ══════════════════════════════════════════════
+function seedDemo(){
+  if(DB.clients.length) return;
+  const clients=[
+    {name:'Mohamed Ben Ali',phone:'98123456',address:'Cité Ennasr',creditLimit:150},
+    {name:'Fatma Benyoussef',phone:'92345678',address:'Rue de la Liberté',creditLimit:100},
+    {name:'Hassan Trabelsi',phone:'55678901',address:'Quartier Olive',creditLimit:200},
+    {name:'Mariem Chébbi',phone:'71234567',address:'Cité Ouest',creditLimit:80},
+    {name:'Ali Bouaziz',phone:'23456789',address:'',creditLimit:120},
+    {name:'Najwa Marzougui',phone:'98765432',address:'Rue Mokhtar',creditLimit:100},
+    {name:'Slim Boukriem',phone:'',address:'Cité Espoir',creditLimit:50},
+  ];
+  clients.forEach(c=>DB.clients.push({id:uid(),createdAt:new Date().toISOString(),...c,notes:''}));
+  const notes=['Pain + lait','Produits alimentaires','Sucre + farine','Huile + tomates','Marchandises diverses','Pâtes + jus','Produits ménagers'];
+  for(let i=0;i<55;i++){
+    const c=DB.clients[Math.floor(Math.random()*DB.clients.length)];
+    const type=Math.random()>0.35?'debit':'credit';
+    const d=new Date(); d.setDate(d.getDate()-Math.floor(Math.random()*75));
+    DB.transactions.push({id:uid(),clientId:c.id,type,amount:parseFloat((1.5+Math.random()*45).toFixed(3)),date:d.toISOString().slice(0,10),note:type==='debit'?notes[Math.floor(Math.random()*notes.length)]:'Paiement crédit',createdAt:d.toISOString()});
+  }
+  saveDB();
+}
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+loadDB(); seedDemo(); renderDashboard();
+</script>
+</body>
+</html>
